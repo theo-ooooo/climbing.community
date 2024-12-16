@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Faker, ko } from '@faker-js/faker';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,13 @@ export class AuthService {
       const tokenData = await this.kakaoGetToken({ code });
 
       const accessToken = tokenData?.access_token;
+
+      const faker = new Faker({ locale: [ko] });
+
+      // const prifix = faker.person.prefix();
+      const nickname = faker.animal.petName();
+
+      console.log(nickname);
 
       if (!accessToken) {
         throw new Error(`kakao token not found`);

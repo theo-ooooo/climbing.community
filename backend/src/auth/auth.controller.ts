@@ -13,8 +13,9 @@ export class AuthController {
   @Get('/kakao')
   @Redirect()
   kakao() {
+    const uri = this.authService.kakaoGetAuthorize();
     return {
-      uri: this.authService.kakaoGetAuthorize(),
+      uri,
       statusCode: 301,
     };
   }
