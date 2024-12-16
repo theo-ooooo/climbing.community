@@ -34,6 +34,7 @@ model Member {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   profile Profile?
+  oauthInformation OauthInformation?
 
   @@map("members")
 }
@@ -41,11 +42,22 @@ model Member {
 
 model Profile {
   memberId Int @id
-  Member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
   nickname String?
   profileImageUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("profiles")
+}
+
+model OauthInformation {
+  memberId Int @unique
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  oauthId String
+  provider String
+  email String?
+
+  @@map("oauthInformation")
+  @@id([oauthId, provider])
 }

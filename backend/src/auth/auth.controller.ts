@@ -7,15 +7,14 @@ export class AuthController {
 
   @Get('/kakao/callback')
   kakaoCallback(@Query() query: { code: string }) {
-    console.log('query', query.code);
+    return this.authService.kakaoCallback({ code: query.code });
   }
 
   @Get('/kakao')
   @Redirect()
   kakao() {
-    const url = this.authService.kakaoAuth();
     return {
-      url,
+      uri: this.authService.kakaoGetAuthorize(),
       statusCode: 301,
     };
   }
