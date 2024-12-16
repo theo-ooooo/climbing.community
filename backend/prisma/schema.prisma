@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  DELETE
+}
+
+
+model Member {
+  id Int @default(autoincrement()) @id
+  status Status @default(ACTIVE)
+  role Role @default(USER)
+  username String?
+  password String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  profile Profile?
+
+  @@map("members")
+}
+
+
+model Profile {
+  memberId Int @id
+  Member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  nickname String?
+  profileImageUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("profiles")
+}
