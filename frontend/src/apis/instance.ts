@@ -26,6 +26,7 @@ export default async function Fetch<T>(url: string, options: RequestInit) {
     );
 
     if (!response.ok) {
+      console.log(response);
       throw new Error(`에러가 발생하였습니다.`);
     }
 

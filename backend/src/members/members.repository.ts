@@ -82,7 +82,10 @@ export class MembersRepository {
     try {
       return this.prisma.member.findUnique({
         where: { id: memberId },
-        include: {
+        select: {
+          id: true,
+          role: true,
+          status: true,
           profile: {
             select: {
               nickname: true,

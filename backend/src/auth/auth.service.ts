@@ -32,7 +32,7 @@ export class AuthService {
         provider: 'kakao',
       });
 
-      let member: Member;
+      let member;
 
       if (oauthData) {
         member = await this.membersSerivce.getMemberById({

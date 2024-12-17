@@ -44,7 +44,8 @@ export class MembersService {
 
   async getMemberById({ memberId }: { memberId: number }) {
     try {
-      return this.membersRepository.getMemberById({ memberId });
+      const member = await this.membersRepository.getMemberById({ memberId });
+      return member;
     } catch (e) {
       throw e;
     }
