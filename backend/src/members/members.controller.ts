@@ -10,6 +10,6 @@ export class MembersController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getMe(@Req() req: Request) {
-    return req.user;
+    return this.membersService.getMemberById({ memberId: req.user.memberId });
   }
 }

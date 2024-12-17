@@ -80,7 +80,7 @@ export class MembersRepository {
 
   async getMemberById({ memberId }: { memberId: number }) {
     try {
-      return this.prisma.member.findUnique({
+      const member = await this.prisma.member.findUnique({
         where: { id: memberId },
         select: {
           id: true,
@@ -94,6 +94,13 @@ export class MembersRepository {
           },
         },
       });
+
+      return {
+        memberId: member.id,
+        role: member.role,
+        status: member.status,
+        ...member.profile,
+      };
     } catch (e) {
       throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }

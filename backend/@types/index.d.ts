@@ -1,6 +1,6 @@
 declare global {
   namespace Express {
-    interface Request extends Express.Request {
+    interface Request {
       user: {
         memberId: number;
         provider: string;
@@ -8,3 +8,5 @@ declare global {
     }
   }
 }
+
+export {};
