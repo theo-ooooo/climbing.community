@@ -6,13 +6,14 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { MembersModule } from './members/members.module';
 import authConfig from './config/auth.config';
+import commonConfig from './config/common.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
-      load: [authConfig],
+      load: [authConfig, commonConfig],
     }),
     AuthModule,
     PrismaModule,

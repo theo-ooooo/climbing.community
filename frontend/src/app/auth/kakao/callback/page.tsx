@@ -8,12 +8,27 @@ export default function Page() {
   const router = useRouter();
   const code = searchParams.get("code");
 
+  const loginAction = async () => {
+    const data = await fetch("http://localhost:4000/api/v1/auth/social-login", {
+      method: "POST",
+      body: JSON.stringify({ code, provider: "kakao" }),
+      headers: {
+        "Content-type": "application/json",
+      },
+      credentials: "include",
+    });
+
+    return data.json();
+  };
+
   useEffect(() => {
     if (!code) {
       router.push("/");
     }
-    console.log("code", code);
+    loginAction().then(() => {
+      router.push("/");
+    });
   }, [code]);
 
-  return <div>kakao callback page {searchParams.get("code")}</div>;
+  return <div>loading...</div>;
 }

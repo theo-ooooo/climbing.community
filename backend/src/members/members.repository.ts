@@ -69,7 +69,7 @@ export class MembersRepository {
   }): Promise<OauthInformation> {
     try {
       const oauthInformation = await prisma.oauthInformation.create({
-        data: { memberId, oauthId, provider },
+        data: { memberId, oauthId: oauthId.toString(), provider },
       });
 
       return oauthInformation;
@@ -105,7 +105,7 @@ export class MembersRepository {
   }): Promise<OauthInformation> {
     try {
       const data = await this.prisma.oauthInformation.findFirst({
-        where: { oauthId, provider },
+        where: { oauthId: oauthId.toString(), provider },
       });
       return data;
     } catch (e) {

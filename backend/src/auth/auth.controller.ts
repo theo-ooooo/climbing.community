@@ -1,32 +1,57 @@
 import {
   Body,
   Controller,
-  Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Post,
+  Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Provider } from 'src/constants';
+import { SocialLoginDto } from './dto/social-login.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/social-login')
-  socialLogin(@Body() body: { code: string; provider: string }) {
-    if (body.provider === Provider.KAKAO) {
-      return this.authService.kakaoCallback({ code: body.code });
-    }
-    new HttpException('NOT FOUND PROVIDER', HttpStatus.NOT_FOUND);
-  }
+  @HttpCode(HttpStatus.OK)
+  async socialLogin(
+    @Body() body: SocialLoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      if (body.provider === Provider.KAKAO) {
+        const tokens = await this.authService.kakaoCallback({
+          code: body.code,
+        });
 
-  // @Get('/kakao')
-  // kakao(@Res() res: Response) {
-  //   const uri = this.authService.kakaoGetAuthorize();
-  //   console.log(uri);
-  //   res.redirect(301, uri);
-  // }
+        res.cookie('accessToken', tokens.accessToken, {
+          httpOnly: true,
+          domain: 'localhost',
+          path: '/',
+          secure: true,
+          expires: new Date(new Date(Date.now() + 1000 * 60 * 60)),
+        });
+
+        res.cookie('refreshToken', tokens.refreshToken, {
+          httpOnly: true,
+          path: '/',
+          domain: 'localhost',
+          secure: true,
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+        });
+
+        return tokens;
+      }
+      throw new HttpException('NOT FOUND PROVIDER', HttpStatus.NOT_FOUND);
+    } catch (e) {
+      console.error('socialLogin error :', e);
+      new UnauthorizedException(e);
+    }
+  }
 }

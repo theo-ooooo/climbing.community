@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { Member } from '@prisma/client';
 import axios from 'axios';
 import { MembersService } from 'src/members/members.service';
 
@@ -8,29 +10,21 @@ export class AuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly membersSerivce: MembersService,
+    private readonly jwtService: JwtService,
   ) {}
-
-  kakaoGetAuthorize(): string {
-    const clientId = this.configService.get<string>('auth.kakao.clientId');
-    const redirectUri = this.configService.get<string>(
-      'auth.kakao.redirectUri',
-    );
-
-    return `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&prompt=login`;
-  }
 
   async kakaoCallback({ code }: { code: string }) {
     try {
       const tokenData = await this.kakaoGetToken({ code });
 
-      const accessToken = tokenData?.access_token;
+      const kakaoAccessToken = tokenData?.access_token;
 
-      if (!accessToken) {
+      if (!kakaoAccessToken) {
         throw new Error(`kakao token not found`);
       }
 
       const kakaoMemberData = await this.kakaoGetAccountInformation({
-        token: accessToken,
+        token: kakaoAccessToken,
       });
 
       const oauthData = await this.membersSerivce.getOauthInformation({
@@ -38,17 +32,34 @@ export class AuthService {
         provider: 'kakao',
       });
 
+      let member: Member;
+
       if (oauthData) {
-        const member = await this.membersSerivce.getMemberById({
+        member = await this.membersSerivce.getMemberById({
           memberId: oauthData.memberId,
+        });
+      } else {
+        member = await this.membersSerivce.registerSocial({
+          oauthId: kakaoMemberData.id,
+          provider: 'kakao',
         });
       }
 
-      const member = await this.membersSerivce.registerSocial({
-        oauthId: kakaoMemberData.id,
+      const accessToken = this.createJwtToken({
+        memberId: member.id,
         provider: 'kakao',
+        tokenType: 'accessToken',
       });
+
+      const refreshToken = this.createJwtToken({
+        memberId: member.id,
+        provider: 'kakao',
+        tokenType: 'refreshToken',
+      });
+
+      return { accessToken, refreshToken };
     } catch (e) {
+      console.error('222', e);
       throw e;
     }
   }
@@ -74,6 +85,7 @@ export class AuthService {
 
       return response.data;
     } catch (e) {
+      console.log(1111, e.response.data);
       throw e;
     }
   }
@@ -88,5 +100,20 @@ export class AuthService {
     } catch (e) {
       throw e;
     }
+  }
+
+  createJwtToken({
+    memberId,
+    provider,
+    tokenType,
+  }: {
+    memberId: number;
+    provider: string;
+    tokenType: string;
+  }) {
+    return this.jwtService.sign(
+      { memberId, provider },
+      { expiresIn: tokenType === 'accessToken ' ? '1d' : '7d' },
+    );
   }
 }
