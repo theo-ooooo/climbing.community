@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Faker, ko } from '@faker-js/faker';
+import { MembersService } from 'src/members/members.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly configService: ConfigService,
-    private readonly prisma: PrismaService,
+    private readonly membersSerivce: MembersService,
   ) {}
 
   kakaoGetAuthorize(): string {
@@ -26,13 +25,6 @@ export class AuthService {
 
       const accessToken = tokenData?.access_token;
 
-      const faker = new Faker({ locale: [ko] });
-
-      // const prifix = faker.person.prefix();
-      const nickname = faker.animal.petName();
-
-      console.log(nickname);
-
       if (!accessToken) {
         throw new Error(`kakao token not found`);
       }
@@ -41,7 +33,21 @@ export class AuthService {
         token: accessToken,
       });
 
-      console.log(kakaoMemberData);
+      const oauthData = await this.membersSerivce.getOauthInformation({
+        oauthId: kakaoMemberData.id,
+        provider: 'kakao',
+      });
+
+      if (oauthData) {
+        const member = await this.membersSerivce.getMemberById({
+          memberId: oauthData.memberId,
+        });
+      }
+
+      const member = await this.membersSerivce.registerSocial({
+        oauthId: kakaoMemberData.id,
+        provider: 'kakao',
+      });
     } catch (e) {
       throw e;
     }
@@ -79,23 +85,6 @@ export class AuthService {
       });
 
       return response.data;
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  async getOauthInformation({
-    oauthId,
-    provider,
-  }: {
-    oauthId: string;
-    provider: string;
-  }): Promise<boolean> {
-    try {
-      const data = await this.prisma.oauthInformation.findFirst({
-        where: { oauthId, provider },
-      });
-      return !!data;
     } catch (e) {
       throw e;
     }

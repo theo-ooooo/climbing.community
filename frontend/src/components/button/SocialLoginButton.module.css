@@ -1,0 +1,12 @@
+.kakao {
+  width: 100%;
+  max-width: 343px;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 16px;
+  background-color: #fee500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
