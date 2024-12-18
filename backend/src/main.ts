@@ -4,6 +4,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import { CommonResponseInterceptor } from './interceptor/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -21,6 +22,7 @@ async function bootstrap() {
   await prismaService.enableShutdownHooks();
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalInterceptors(new CommonResponseInterceptor());
   app.use(cookieParser());
 
   await app.listen(4000);

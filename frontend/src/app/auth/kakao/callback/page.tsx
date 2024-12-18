@@ -1,34 +1,35 @@
 "use client";
 
+import { socialLogin } from "@/apis/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 export default function Page() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const code = searchParams.get("code");
 
-  const loginAction = async () => {
-    const data = await fetch("http://localhost:4000/api/v1/auth/social-login", {
-      method: "POST",
-      body: JSON.stringify({ code, provider: "kakao" }),
-      headers: {
-        "Content-type": "application/json",
-      },
-      credentials: "include",
-    });
+  const loginAction = useCallback(async () => {
+    try {
+      const data = await socialLogin({ code, provider: "kakao" });
 
-    return data.json();
-  };
+      if (data.accessToken && data.refreshToken) {
+        router.push("/");
+      } else {
+        router.push("/auth/login");
+      }
+    } catch (e) {
+      console.error(e);
+      router.push("/auth/login");
+    }
+  }, [code, router]);
 
   useEffect(() => {
     if (!code) {
       router.push("/");
     }
-    loginAction().then(() => {
-      router.push("/");
-    });
-  }, [code]);
+    loginAction();
+  }, [code, router, loginAction]);
 
   return <div>loading...</div>;
 }
