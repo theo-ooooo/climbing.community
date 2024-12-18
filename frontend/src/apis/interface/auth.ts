@@ -1,4 +1,4 @@
-export interface SocialLoginType {
+export interface TokenResponse {
   accessToken: string;
   refreshToken: string;
 }

@@ -1,21 +1,20 @@
-"use client";
-
 import Fetch from "@/apis/instance";
+import { getMembersMe } from "@/apis/interface/members";
+import { cookies } from "next/headers";
 import Link from "next/link";
-import { useEffect } from "react";
 
-export default function Home() {
-  // const data = await Fetch("/api/v1/members/me", {});
-  // console.log(data);
+export default async function Home() {
+  const cookieStore = await cookies();
 
-  const getUser = async () => {
-    const data = await Fetch("/api/v1/members/me", {});
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const refreshToken = cookieStore.get("refreshToken")?.value;
+
+  if (accessToken && refreshToken) {
+    const data = await getMembersMe({ accessToken });
+
     console.log(data);
-  };
+  }
 
-  useEffect(() => {
-    getUser();
-  }, []);
   return (
     <div>
       <Link href='/auth/login'>로그인 페이지 가기</Link>

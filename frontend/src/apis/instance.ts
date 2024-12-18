@@ -5,25 +5,51 @@ interface Response<T> {
   data: T;
 }
 
-export default async function Fetch<T>(url: string, options: RequestInit) {
+interface FetchOptions {
+  method?: "GET" | "POST" | "PUT" | "DELETE";
+  body?: object;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  headers?: { [key: string]: any };
+  query?: object;
+}
+
+export default async function Fetch<T>(url: string, options: FetchOptions) {
   if (!url) {
     throw new Error("url is required");
   }
 
-  const headers = {
-    "Content-type": "application/json",
-    ...(options.headers || {}),
+  const requestInit: RequestInit = {
+    method: options.method || "GET",
+    headers: {
+      "Content-type": "application/json",
+    },
+    credentials: "include",
   };
+
+  if (options.headers) {
+    requestInit.headers = { ...requestInit.headers, ...options.headers };
+  }
+
+  if (options.body) {
+    requestInit.body = JSON.stringify(options.body);
+  }
+
+  if (options.query) {
+    const queryString = new URLSearchParams(
+      options.query as Record<string, string>
+    ).toString();
+    url = `${url}?${queryString}`;
+  }
 
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_SERVER_API_URI}${url}`,
-      {
-        ...options,
-        headers,
-        credentials: "include",
-      }
+      requestInit
     );
+
+    // 토큰 만료.
+    if (response.status === 401) {
+    }
 
     if (!response.ok) {
       console.log(response);
