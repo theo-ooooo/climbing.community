@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   HttpException,
   HttpStatus,
@@ -88,5 +89,14 @@ export class AuthController {
       res.clearCookie('refreshToken', { domain: 'localhost', path: '/' });
       throw e;
     }
+  }
+
+  @Delete('/logout')
+  @HttpCode(HttpStatus.OK)
+  logout(@Res() res: Response) {
+    res.clearCookie('accessToken', { domain: 'localhost', path: '/' });
+    res.clearCookie('refreshToken', { domain: 'localhost', path: '/' });
+
+    return { message: '로그아웃' };
   }
 }
