@@ -34,7 +34,7 @@ export class MembersService {
             prisma,
           }),
         ]);
-        return member;
+        return { ...member, memberId: member.id };
       });
     } catch (e) {
       console.error(e);

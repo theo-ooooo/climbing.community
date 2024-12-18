@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Member } from '@prisma/client';
@@ -46,13 +46,13 @@ export class AuthService {
       }
 
       const accessToken = this.createJwtToken({
-        memberId: member.id,
+        memberId: member.memberId,
         provider: 'kakao',
         tokenType: 'accessToken',
       });
 
       const refreshToken = this.createJwtToken({
-        memberId: member.id,
+        memberId: member.memberId,
         provider: 'kakao',
         tokenType: 'refreshToken',
       });
@@ -115,5 +115,31 @@ export class AuthService {
       { memberId, provider },
       { expiresIn: tokenType === 'accessToken ' ? '1d' : '7d' },
     );
+  }
+
+  async refresh({ refreshToken }: { refreshToken: string }) {
+    try {
+      if (!refreshToken) {
+        throw new ForbiddenException(`Token이 존재하지 않습니다.`);
+      }
+
+      const verify = await this.jwtService.verifyAsync(refreshToken, {
+        secret: this.configService.get('auth.jwt.secret'),
+      });
+
+      const newAccessToken = this.createJwtToken({
+        ...verify,
+        tokenType: 'accessToken',
+      });
+
+      const newRefreshToken = this.createJwtToken({
+        ...verify,
+        tokenType: 'refreshToken',
+      });
+
+      return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+    } catch (e) {
+      throw e;
+    }
   }
 }

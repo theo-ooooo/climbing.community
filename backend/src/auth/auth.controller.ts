@@ -51,7 +51,42 @@ export class AuthController {
       throw new HttpException('NOT FOUND PROVIDER', HttpStatus.NOT_FOUND);
     } catch (e) {
       console.error('socialLogin error :', e);
-      new UnauthorizedException(e);
+      throw e;
+    }
+  }
+
+  @Post('/refresh')
+  @HttpCode(HttpStatus.OK)
+  async refrech(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = req.cookies?.refreshToken;
+
+    try {
+      const tokens = await this.authService.refresh({ refreshToken });
+
+      res.cookie('accessToken', tokens.accessToken, {
+        httpOnly: true,
+        domain: 'localhost',
+        path: '/',
+        secure: true,
+        expires: new Date(new Date(Date.now() + 1000 * 60 * 60)),
+      });
+
+      res.cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        path: '/',
+        domain: 'localhost',
+        secure: true,
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7),
+      });
+
+      return tokens;
+    } catch (e) {
+      res.clearCookie('accessToken', { domain: 'localhost', path: '/' });
+      res.clearCookie('refreshToken', { domain: 'localhost', path: '/' });
+      throw e;
     }
   }
 }
