@@ -14,13 +14,23 @@ import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
 import { Provider } from 'src/constants';
 import { SocialLoginDto } from './dto/social-login.dto';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiTags('인증 API')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('/social-login')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: '소셜 로그인 API (카카오, 네이버)',
+    description: '로그인 및 회원가입 진행한다',
+  })
+  @ApiOkResponse({
+    description: '쿠키로 Token를 생성한다.',
+    // type: { accesToken: string },
+  })
   async socialLogin(
     @Body() body: SocialLoginDto,
     @Res({ passthrough: true }) res: Response,
