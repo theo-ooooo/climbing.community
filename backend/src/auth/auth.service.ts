@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Member } from '@prisma/client';
 import axios from 'axios';
 import { MembersService } from 'src/members/members.service';
 

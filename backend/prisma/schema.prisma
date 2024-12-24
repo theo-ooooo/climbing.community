@@ -13,7 +13,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 enum Role {
   USER
   ADMIN
@@ -24,40 +23,81 @@ enum Status {
   DELETE
 }
 
+enum Display {
+  SHOW
+  NOT_SHOW
+  ONLY_ME
+}
 
 model Member {
-  id Int @default(autoincrement()) @id
-  status Status @default(ACTIVE)
-  role Role @default(USER)
-  username String?
-  password String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  profile Profile?
+  id               Int               @id @default(autoincrement())
+  status           Status            @default(ACTIVE)
+  role             Role              @default(USER)
+  username         String?
+  password         String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  profile          Profile?
   oauthInformation OauthInformation?
+  articles         Article[]
 
   @@map("members")
 }
 
-
 model Profile {
-  memberId Int @id
-  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  nickname String?
+  memberId        Int      @id
+  member          Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  nickname        String?  @unique
   profileImageUrl String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@map("profiles")
 }
 
 model OauthInformation {
-  memberId Int @unique
-  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  oauthId String
-  provider String
-  email String?
+  memberId  Int      @unique
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  oauthId   String
+  provider  String
+  email     String?
+  createdAt DateTime @default(now())
 
-  @@map("oauthInformation")
   @@id([oauthId, provider])
+  @@map("oauthInformation")
+}
+
+model Article {
+  id         Int          @id @default(autoincrement())
+  title      String?
+  content    String       @db.Text()
+  memberId   Int
+  member     Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  display    Display      @default(SHOW)
+  tags       ArticleTag[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@map("articles")
+}
+
+model Tag {
+  id         Int          @id @default(autoincrement())
+  name       String
+  articles   ArticleTag[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@map("tags")
+}
+
+model ArticleTag {
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId Int
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     Int
+  createdAt DateTime @default(now())
+
+  @@id([articleId, tagId])
+  @@map("articleTags")
 }

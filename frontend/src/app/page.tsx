@@ -1,4 +1,3 @@
-import Fetch from "@/apis/instance";
 import { getMembersMe } from "@/apis/interface/members";
 import { cookies } from "next/headers";
 import Link from "next/link";

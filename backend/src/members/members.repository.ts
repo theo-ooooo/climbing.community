@@ -47,7 +47,10 @@ export class MembersRepository {
   }): Promise<Profile> {
     try {
       const profile = await prisma.profile.create({
-        data: { memberId, nickname: this.generateNickname() },
+        data: {
+          memberId,
+          nickname: this.generateNickname().replace(/\s+/g, ''),
+        },
       });
 
       return profile;
@@ -118,6 +121,18 @@ export class MembersRepository {
         where: { oauthId: oauthId.toString(), provider },
       });
       return data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async nicknameExists({ nickname }: { nickname: string }): Promise<boolean> {
+    try {
+      const profile = await this.prisma.profile.findUnique({
+        where: { nickname },
+      });
+
+      return !!profile;
     } catch (e) {
       throw e;
     }

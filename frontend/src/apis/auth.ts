@@ -31,3 +31,7 @@ export async function refresh(request: RefreshRequest): Promise<TokenResponse> {
 
   return data;
 }
+
+export async function logout(): Promise<void> {
+  await Fetch<{ message: string }>("/api/v1/auth/logout", { method: "DELETE" });
+}
